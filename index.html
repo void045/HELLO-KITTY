@@ -93,6 +93,10 @@
         <div class="game-shell">
           <div class="game-topbar">
             <div class="status-pill">
+              <span>Level</span>
+              <strong id="levelLabel">1</strong>
+            </div>
+            <div class="status-pill">
               <span>Charms</span>
               <strong id="scoreLabel">0 / 6</strong>
             </div>
@@ -121,17 +125,89 @@
               aria-label="Kitty platform game"
             ></canvas>
             <div class="game-overlay" id="gameOverlay">
-              <div class="overlay-card">
-                <p class="eyebrow">Tiny Love Platformer</p>
-                <h3>Help the bow kitty collect every charm.</h3>
-                <p>
-                  Double jumps, candy shields, sneaky spike traps, tiny dragons,
-                  and one sparkly sword are waiting in the clouds.
+              <section class="overlay-panel story-card is-active" id="storyPanel" aria-label="Story cutscene">
+                <p class="eyebrow">Story Time</p>
+                <h3 class="story-title" id="storyTitle">Rimu &amp; The Stolen Sparkle</h3>
+                <p id="storySubtitle">
+                  A cozy bow-kitty adventure with pastel magic, candy skies, and a love worth chasing.
+                </p>
+
+                <div class="story-stage" aria-live="polite">
+                  <div class="story-sparkles" aria-hidden="true">
+                    <span>✦</span>
+                    <span>❤</span>
+                    <span>✿</span>
+                    <span>✦</span>
+                  </div>
+
+                  <div class="story-actors" aria-hidden="true">
+                    <div class="actor">
+                      <div class="actor-emoji" id="storyLeftEmoji">🎀</div>
+                      <div class="actor-name" id="storyLeftName">Rimu</div>
+                      <p class="actor-note" id="storyLeftNote">A chibi bow-kitty hero.</p>
+                    </div>
+                    <div class="actor">
+                      <div class="actor-emoji" id="storyRightEmoji">🧺</div>
+                      <div class="actor-name" id="storyRightName">Ayush</div>
+                      <p class="actor-note" id="storyRightNote">The sparkle keeper.</p>
+                    </div>
+                  </div>
+
+                  <p class="story-text" id="storyText"></p>
+                </div>
+
+                <div class="story-meta" aria-label="Story progress">
+                  <span class="story-chip" id="storyStepLabel">Scene 1 / 3</span>
+                  <span class="story-chip" id="storyMoodLabel">Pastel &amp; cozy</span>
+                </div>
+
+                <div class="story-actions" aria-label="Story controls">
+                  <button class="secondary-button" id="storySkipButton" type="button">Skip</button>
+                  <button class="primary-button" id="storyNextButton" type="button">Next</button>
+                </div>
+
+                <div class="story-actions" aria-label="Play level">
+                  <button class="primary-button" id="storyPlayButton" type="button">Play Level 1</button>
+                </div>
+              </section>
+
+              <section class="overlay-panel overlay-card" id="readyPanel" aria-label="Level intro">
+                <p class="eyebrow" id="overlayEyebrow">Level 1</p>
+                <h3 id="overlayTitle">Collect every charm, then touch the glowing gate.</h3>
+                <p id="overlayBody">
+                  Double jump higher to clear walls, grab candy shields for safety, and use the sword to slash dragons and cut fireballs.
                 </p>
                 <button class="primary-button" id="startButton" type="button">
-                  Start Playing
+                  Start Level 1
                 </button>
-              </div>
+              </section>
+
+              <section class="overlay-panel win-card" id="winPanel" aria-label="Level complete">
+                <p class="eyebrow">Level Complete</p>
+                <h3 class="win-title" id="winTitle">You saved the Sparkle Ribbon.</h3>
+                <p id="winBody">
+                  Charms collected, dragon drama handled, and the sky is basically cheering for you.
+                </p>
+
+                <div class="imessage" aria-label="Love message">
+                  <div class="imessage-top">
+                    <span>iMessage</span>
+                    <span id="winTimeLabel">now</span>
+                  </div>
+                  <div class="bubble-row">
+                    <div class="bubble them" id="winThemBubble">We did it. Cute victory unlocked.</div>
+                    <div class="bubble me" id="winLoveBubble">
+                      I love you
+                      <span class="tiny" id="winTinyLabel">Level 1 complete</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="story-actions" aria-label="Level actions">
+                  <button class="secondary-button" id="winStoryButton" type="button">Replay Story</button>
+                  <button class="primary-button" id="winPlayAgainButton" type="button">Play Again</button>
+                </div>
+              </section>
             </div>
           </div>
 

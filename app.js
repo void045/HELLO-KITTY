@@ -5,17 +5,50 @@ const overlay = document.getElementById("gameOverlay");
 const startButton = document.getElementById("startButton");
 const restartButton = document.getElementById("restartButton");
 const soundToggle = document.getElementById("soundToggle");
+const levelLabel = document.getElementById("levelLabel");
 const scoreLabel = document.getElementById("scoreLabel");
 const bestLabel = document.getElementById("bestLabel");
 const shieldLabel = document.getElementById("shieldLabel");
 const swordLabel = document.getElementById("swordLabel");
 const hintLabel = document.getElementById("hintLabel");
 
+const storyPanel = document.getElementById("storyPanel");
+const readyPanel = document.getElementById("readyPanel");
+const winPanel = document.getElementById("winPanel");
+
+const overlayEyebrow = document.getElementById("overlayEyebrow");
+const overlayTitle = document.getElementById("overlayTitle");
+const overlayBody = document.getElementById("overlayBody");
+
+const storyTitle = document.getElementById("storyTitle");
+const storyText = document.getElementById("storyText");
+const storyStepLabel = document.getElementById("storyStepLabel");
+const storyMoodLabel = document.getElementById("storyMoodLabel");
+const storyNextButton = document.getElementById("storyNextButton");
+const storySkipButton = document.getElementById("storySkipButton");
+const storyPlayButton = document.getElementById("storyPlayButton");
+const storyLeftEmoji = document.getElementById("storyLeftEmoji");
+const storyLeftName = document.getElementById("storyLeftName");
+const storyLeftNote = document.getElementById("storyLeftNote");
+const storyRightEmoji = document.getElementById("storyRightEmoji");
+const storyRightName = document.getElementById("storyRightName");
+const storyRightNote = document.getElementById("storyRightNote");
+
+const winTitle = document.getElementById("winTitle");
+const winBody = document.getElementById("winBody");
+const winTimeLabel = document.getElementById("winTimeLabel");
+const winThemBubble = document.getElementById("winThemBubble");
+const winTinyLabel = document.getElementById("winTinyLabel");
+const winStoryButton = document.getElementById("winStoryButton");
+const winPlayAgainButton = document.getElementById("winPlayAgainButton");
+
 const game = {
   running: false,
   won: false,
   lastTime: 0,
   best: 0,
+  level: 1,
+  maxLevel: 1,
   camera: { x: 0, y: 0 },
   particles: [],
   effects: [],
@@ -35,6 +68,175 @@ const input = {
   jumpPressed: false,
   attackPressed: false,
 };
+
+const overlayPanels = [storyPanel, readyPanel, winPanel].filter(Boolean);
+
+function setOverlayPanel(panel) {
+  overlayPanels.forEach((candidate) => {
+    candidate.classList.toggle("is-active", candidate === panel);
+  });
+}
+
+function showOverlay(panel) {
+  overlay.classList.remove("hidden");
+  setOverlayPanel(panel);
+}
+
+function hideOverlay() {
+  overlay.classList.add("hidden");
+}
+
+function overlayIsVisible() {
+  return !overlay.classList.contains("hidden");
+}
+
+function overlayActivePanel() {
+  return overlayPanels.find((panel) => panel.classList.contains("is-active")) ?? null;
+}
+
+function advanceStoryOrReady(panel) {
+  if (panel === storyPanel) {
+    if (storyIndex < storyScenes.length - 1) {
+      storyIndex += 1;
+      renderStoryScene();
+      return true;
+    }
+    showReady();
+    return true;
+  }
+
+  if (panel === readyPanel) {
+    if (!storySeen) {
+      storySeen = true;
+    }
+    startGame();
+    return true;
+  }
+
+  if (panel === winPanel) {
+    startGame();
+    return true;
+  }
+
+  return false;
+}
+
+const storyScenes = [
+  {
+    mood: "Sunny picnic",
+    title: "Scene 1: The Picnic",
+    left: { emoji: "🎀", name: "Rimu", note: "Swaying and humming on the blanket." },
+    right: { emoji: "🧺", name: "Ayush", note: "Opens the sparkle box with a grin." },
+    text:
+      "A bright meadow glows softly, like everything is made of warm pastels.\n\n" +
+      "Rimu sits on a striped blanket, swaying side to side and humming as tiny musical notes drift up.\n\n" +
+      "Ayush lifts a little box from the picnic basket. It cracks open and a pulsing golden light (the Sparkle Ribbon) floods their faces. They both go “ooh” with sparkling eyes.",
+  },
+  {
+    mood: "Bouncy chaos",
+    title: "Scene 2: The Kidnapping",
+    left: { emoji: "😮", name: "Rimu", note: "Shock bubble, paws over mouth." },
+    right: { emoji: "🐉", name: "Dazzle-Scale", note: "Clumsy dragon with glitter wings." },
+    text:
+      "A shadow creeps over the blanket. Everyone freezes for a beat.\n\n" +
+      "Dazzle-Scale crashes down with a bouncy thud, snoots the air, spots the ribbon, and dives.\n\n" +
+      "It snatches the ribbon box and its big tail accidentally wraps Ayush in a snug, swaddled hug. With slow wing flaps it lifts off, kicking up sparkly dust while Ayush waves frantically as he’s carried away.",
+  },
+  {
+    mood: "Hero mode",
+    title: "Scene 3: The Determination",
+    left: { emoji: "🔥", name: "Rimu", note: "Determined eyes, tiny brave pose." },
+    right: { emoji: "⭐", name: "Star-Wand", note: "A stick morphs into glowing magic." },
+    text:
+      "Rimu runs after the dragon, then drops to his knees, head bowed.\n\n" +
+      "A thought bubble pops up: Ayush, sad and far away.\n\n" +
+      "Then Rimu’s face flips to determined. He packs his backpack full of treats, grabs a simple stick, and it instantly morphs into a glowing Star-Wand. He strikes a heroic pose.\n\n" +
+      "Level 1 begins.",
+  },
+  {
+    mood: "Glitter boss vibes",
+    title: "Scene 4: Feeding Time",
+    left: { emoji: "🍬", name: "Rimu", note: "Dashing with treats and a wand." },
+    right: { emoji: "🐉", name: "Dazzle-Scale", note: "Guarding the Sparkle Ribbon." },
+    text:
+      "High above the clouds, glittering crystals shine on a mountain peak.\n\n" +
+      "Dazzle-Scale curls around the Sparkle Ribbon, drooling a little, grumpy as can be.\n\n" +
+      "Ayush floats nearby inside a big iridescent bubble, tapping the side and looking hopeful.\n\n" +
+      "The dragon breathes slow “glitter-fire” clouds. Rimu dodges and tosses homemade treats in a sweet arc. When one lands right, a big “YUM!” bubble pops up and the dragon chews happily for a moment.",
+  },
+  {
+    mood: "Confetti reunion",
+    title: "Scene 5: The Reunion",
+    left: { emoji: "💖", name: "Rimu", note: "Runs in for the biggest hug." },
+    right: { emoji: "🌈", name: "Ayush", note: "Safe again, sparkle-eyed." },
+    text:
+      "The dragon’s anger meter flips into a heart.\n\n" +
+      "With a happy burp and a sleepy yawn, Dazzle-Scale curls into a tiny, purring ball.\n\n" +
+      "Rimu taps the bubble with the wand. POP! Confetti everywhere.\n\n" +
+      "Ayush tumbles out and they hug-spin in a swirl of hearts. The ribbon ties onto the wand and it glows brighter than ever.\n\n" +
+      "A small dragon trots up, tail wagging, and the trio walks onto a rainbow bridge into the sunset.",
+  },
+];
+
+let storyIndex = 0;
+let storySeen = false;
+
+function formatClock(date) {
+  return date.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+}
+
+function renderStoryScene() {
+  const scene = storyScenes[storyIndex];
+  if (!scene) {
+    return;
+  }
+
+  if (storyTitle) {
+    storyTitle.textContent = scene.title;
+  }
+  if (storyText) {
+    storyText.textContent = scene.text;
+  }
+  if (storyStepLabel) {
+    storyStepLabel.textContent = `Scene ${storyIndex + 1} / ${storyScenes.length}`;
+  }
+  if (storyMoodLabel) {
+    storyMoodLabel.textContent = scene.mood;
+  }
+
+  if (storyLeftEmoji) storyLeftEmoji.textContent = scene.left.emoji;
+  if (storyLeftName) storyLeftName.textContent = scene.left.name;
+  if (storyLeftNote) storyLeftNote.textContent = scene.left.note;
+  if (storyRightEmoji) storyRightEmoji.textContent = scene.right.emoji;
+  if (storyRightName) storyRightName.textContent = scene.right.name;
+  if (storyRightNote) storyRightNote.textContent = scene.right.note;
+
+  if (storyNextButton) {
+    storyNextButton.textContent = storyIndex === storyScenes.length - 1 ? "Continue" : "Next";
+  }
+}
+
+function showReady() {
+  if (overlayEyebrow) {
+    overlayEyebrow.textContent = `Level ${game.level}`;
+  }
+  if (overlayTitle) {
+    overlayTitle.textContent = "Collect every charm, then touch the glowing gate.";
+  }
+  if (overlayBody) {
+    overlayBody.textContent =
+      "Double jump higher to clear walls, grab candy shields for safety, and use the sword to slash dragons and cut fireballs.";
+  }
+  if (startButton) {
+    startButton.textContent = `Start Level ${game.level}`;
+  }
+  showOverlay(readyPanel);
+}
+
+function startFromStory() {
+  storySeen = true;
+  startGame();
+}
 
 const skyBands = [
   { y: 0, alpha: 0.2, speed: 12 },
@@ -133,7 +335,8 @@ const player = {
   moveSpeed: 280,
   acceleration: 1700,
   friction: 1800,
-  jumpVelocity: -560,
+  jumpVelocity: -600,
+  doubleJumpBoost: 1.08,
   jumpCut: 0.45,
   maxFallSpeed: 950,
   grounded: false,
@@ -349,6 +552,9 @@ function setHint(message) {
 }
 
 function updateLabels() {
+  if (levelLabel) {
+    levelLabel.textContent = `${game.level} / ${game.maxLevel}`;
+  }
   scoreLabel.textContent = `${player.collected} / ${world.charms.length}`;
   bestLabel.textContent = String(game.best);
   shieldLabel.textContent = String(player.shield);
@@ -406,23 +612,18 @@ function resetWorld() {
 
 function startGame() {
   ensureAudio();
-  soundBank.click();
   resetWorld();
-  overlay.classList.add("hidden");
+  hideOverlay();
   game.running = true;
   game.lastTime = performance.now();
-  setHint("Double jump through traps, grab candy shields, and slash dragons with the sword.");
+  setHint("Level 1: double jump higher to clear walls, grab candy shields, then slash dragons with the sword.");
 }
 
 function restartGame() {
   soundBank.reset();
   resetWorld();
-  overlay.classList.remove("hidden");
-  overlay.querySelector("h3").textContent = "Ready for another epic cute run?";
-  overlay.querySelector("p").textContent =
-    "Candy shields, spikes, dragons, and the sparkly sword reset for a fresh adventure.";
-  startButton.textContent = "Start Again";
   game.running = false;
+  showReady();
   setHint("Tip: hold jump for height, and release early if you need a shorter hop.");
 }
 
@@ -441,7 +642,9 @@ function tryJump() {
     player.jumpsRemaining = player.maxJumps - 1;
     spawnRing(player.x + player.width / 2, player.y + player.height / 2, "rgba(105, 217, 255, 0.75)", 52);
   } else {
-    player.vy = canAirJump ? player.jumpVelocity * 0.92 : player.jumpVelocity;
+    player.vy = canAirJump
+      ? player.jumpVelocity * player.doubleJumpBoost
+      : player.jumpVelocity;
     player.jumpsRemaining = canAirJump
       ? Math.max(0, player.jumpsRemaining - 1)
       : player.maxJumps - 1;
@@ -761,12 +964,24 @@ function updateCharms(time) {
     game.best = world.charms.length;
     updateLabels();
     soundBank.win();
-    overlay.classList.remove("hidden");
-    overlay.querySelector("h3").textContent = "You delivered the love letter.";
-    overlay.querySelector("p").textContent =
-      "Every charm is collected, the gate is glowing, and the bow kitty absolutely nailed the vibe.";
-    startButton.textContent = "Play Again";
-    setHint("Perfect run. Try again anytime for another cute little victory.");
+    if (winTimeLabel) {
+      winTimeLabel.textContent = formatClock(new Date());
+    }
+    if (winTitle) {
+      winTitle.textContent = `Level ${game.level} Complete!`;
+    }
+    if (winBody) {
+      winBody.textContent =
+        "Charms collected, gate unlocked, and the Sparkle Ribbon is safe again. Your victory message just landed.";
+    }
+    if (winThemBubble) {
+      winThemBubble.textContent = "That was the cutest rescue mission ever.";
+    }
+    if (winTinyLabel) {
+      winTinyLabel.textContent = `Level ${game.level} complete`;
+    }
+    showOverlay(winPanel);
+    setHint("Level complete. Open the love message, then play again anytime.");
   } else if (
     !game.won &&
     rectsIntersect(player, world.goal) &&
@@ -1534,8 +1749,32 @@ window.addEventListener("keyup", (event) => {
   }
 });
 
-startButton.addEventListener("click", startGame);
+startButton.addEventListener("click", () => {
+  if (!storySeen) {
+    showOverlay(storyPanel);
+    renderStoryScene();
+    setHint("Story time first. Tap Next to see what happened.");
+    return;
+  }
+  startGame();
+});
 restartButton.addEventListener("click", restartGame);
+
+overlay.addEventListener("pointerdown", (event) => {
+  if (!overlayIsVisible()) {
+    return;
+  }
+
+  const target = event.target;
+  if (target instanceof Element && target.closest("button, a")) {
+    return;
+  }
+
+  const panel = overlayActivePanel();
+  if (panel) {
+    advanceStoryOrReady(panel);
+  }
+});
 
 soundToggle.addEventListener("click", () => {
   audioState.enabled = !audioState.enabled;
@@ -1557,6 +1796,64 @@ document.querySelectorAll("a, button").forEach((element) => {
   });
 });
 
+if (storyNextButton) {
+  storyNextButton.addEventListener("click", () => {
+    ensureAudio();
+    if (storyIndex < storyScenes.length - 1) {
+      storyIndex += 1;
+      renderStoryScene();
+      return;
+    }
+
+    storySeen = true;
+    showReady();
+    setHint("Level 1 is ready. Double jump higher to clear the walls.");
+  });
+}
+
+if (storySkipButton) {
+  storySkipButton.addEventListener("click", () => {
+    storySeen = true;
+    showReady();
+    setHint("Skipped the story. Level 1 is ready when you are.");
+  });
+}
+
+if (storyPlayButton) {
+  storyPlayButton.addEventListener("click", () => {
+    startFromStory();
+  });
+}
+
+if (winStoryButton) {
+  winStoryButton.addEventListener("click", () => {
+    storyIndex = 0;
+    renderStoryScene();
+    showOverlay(storyPanel);
+    setHint("Story replay. Tap Next to see every scene again.");
+  });
+}
+
+if (winPlayAgainButton) {
+  winPlayAgainButton.addEventListener("click", () => {
+    startGame();
+  });
+}
+
 updateLabels();
+renderStoryScene();
+showOverlay(storyPanel);
 render(0);
 requestAnimationFrame(update);
+
+canvas.addEventListener("pointerdown", () => {
+  if (!overlayIsVisible()) {
+    ensureAudio();
+    return;
+  }
+
+  const panel = overlayActivePanel();
+  if (panel) {
+    advanceStoryOrReady(panel);
+  }
+});
